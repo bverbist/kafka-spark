@@ -18,7 +18,6 @@ public class NetflixDataReader {
     public Stream<MovieRating> streamMovieRatings() {
         return Stream.of(new File(DATA_PATH).listFiles())
             .flatMap(file -> getRatings(file))
-            .skip(2000)
             .limit(5000);
     }
 
