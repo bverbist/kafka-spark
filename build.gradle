@@ -26,7 +26,7 @@ allprojects {
 
 	dependencyManagement {
 		dependencies {
-            dependency "org.apache.kafka:kafka-clients:0.8.2.2"
+            dependency "org.apache.kafka:kafka-clients:0.9.0.1"
             dependency "org.slf4j:slf4j-api:1.7.19"
             dependency "ch.qos.logback:logback-classic:1.1.6"
 			dependency "junit:junit:4.11"
