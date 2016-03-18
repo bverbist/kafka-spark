@@ -15,7 +15,7 @@ public class TimeSeriesKafkaProducer {
             Producer<String, String> producer = new KafkaProducer(getProducerProperties());
 
             for (int i = 0; i < 100; i++)
-                producer.send(new ProducerRecord<String, String>(TOPIC_NAME, Integer.toString(i), Integer.toString(i)));
+                producer.send(new ProducerRecord<>(TOPIC_NAME, Integer.toString(i), Integer.toString(i)));
 
             producer.close();
         } catch(Exception e) {

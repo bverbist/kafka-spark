@@ -4,4 +4,8 @@ dependencies {
     compile "org.apache.kafka:kafka-clients"
     compile "org.slf4j:slf4j-api"
     compile "ch.qos.logback:logback-classic"
+    compile "org.springframework.boot:spring-boot-starter-integration"
+    compile "org.springframework.boot:spring-boot-starter"
+    compile "org.springframework.integration:spring-integration-kafka"
+    compile "org.springframework.integration:spring-integration-java-dsl"
 }
