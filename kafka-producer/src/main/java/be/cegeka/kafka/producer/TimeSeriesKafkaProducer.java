@@ -25,7 +25,7 @@ public class TimeSeriesKafkaProducer {
 
     private static Properties getProducerProperties() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "192.168.99.100:32800");
+        props.put("bootstrap.servers", "192.168.99.100:9092");
         props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);

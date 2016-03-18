@@ -9,12 +9,11 @@ zookeeper:
 kafka-0:
   image: dockerkafka/kafka
   ports:
-    - "9092:9092"
+    - "9090:9092"
   links:
     - zookeeper:zookeeper
-  environment:
-    KAFKA_ADVERTISED_HOST_NAME: 192.168.99.100
-    KAFKA_ADVERTISED_PORT: 9092
+  volumes:
+      - ./config0:/opt/kafka_2.10-0.8.2.1/config
 
 kafka-1:
   image: dockerkafka/kafka
@@ -22,21 +21,15 @@ kafka-1:
     - "9091:9092"
   links:
     - zookeeper:zookeeper
-  environment:
-    KAFKA_ADVERTISED_HOST_NAME: 192.168.99.100
-    KAFKA_ADVERTISED_PORT: 9091
   volumes:
     - ./config1:/opt/kafka_2.10-0.8.2.1/config
 
 kafka-2:
   image: dockerkafka/kafka
   ports:
-    - "9090:9092"
+    - "9092:9092"
   links:
     - zookeeper:zookeeper
-  environment:
-    KAFKA_ADVERTISED_HOST_NAME: 192.168.99.100
-    KAFKA_ADVERTISED_PORT: 9090
   volumes:
     - ./config2:/opt/kafka_2.10-0.8.2.1/config
 
