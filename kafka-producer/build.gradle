@@ -1,0 +1,5 @@
+group = 'be.cegeka.kafka.producer'
+
+dependencies {
+    compile "org.apache.kafka:kafka-clients"
+}
