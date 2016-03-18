@@ -41,3 +41,15 @@ kafka-manager:
     - "9000:9000"
   links:
     - zookeeper:zookeeper
+
+spark:
+  image: sequenceiq/spark
+  ports:
+    - "8088:8088"
+    - "8042:8042"
+    - "4040:4040"
+  links:
+    - zookeeper:zookeeper
+    - kafka-0:kafka
+  volumes:
+    - ./spark:/app

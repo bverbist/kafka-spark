@@ -1,0 +1,32 @@
+group = 'be.cegeka.kafka.sparkconsumer'
+
+configurations {
+    provided
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+    }
+}
+
+dependencies {
+    provided "org.apache.spark:spark-core_2.10"
+    provided "org.apache.spark:spark-streaming_2.10"
+    compile "org.apache.spark:spark-streaming-kafka_2.10"
+    compile "org.slf4j:slf4j-api"
+    compile "ch.qos.logback:logback-classic"
+}
+
+//create a single Jar with all dependencies
+//task fatJar(type: Jar) {
+//    baseName = project.name + '-all'
+//    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+//    with jar
+//}
+
+jar {
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
