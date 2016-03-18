@@ -7,6 +7,7 @@ task wrapper(type: Wrapper) {
 buildscript {
 	repositories {
         mavenCentral()
+		maven { url "http://repo.spring.io/release" }
         jcenter()
 	}
 
@@ -21,6 +22,7 @@ allprojects {
 
 	repositories {
         mavenCentral()
+		maven { url "http://repo.spring.io/release" }
         jcenter()
 	}
 

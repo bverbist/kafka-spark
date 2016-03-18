@@ -31,13 +31,28 @@ import java.util.Map;
 @SpringBootApplication
 public class Application {
 
-    public static final String TEST_TOPIC_ID = "test";
+//    public static final String TEST_TOPIC_ID = "test";
 
     @Component
-    public static class KafkaConfig {
+    public static class NetflixKafkaConfig extends KafkaConfig {
+
+        protected NetflixKafkaConfig() {
+            super("netflix");
+        }
+    }
+
+    @Component
+    public static class TestKafkaConfig extends KafkaConfig {
+
+        protected TestKafkaConfig() {
+            super("test");
+        }
+    }
+
+    public static abstract class KafkaConfig {
 
 //        @Value("${kafka.topic:" + TEST_TOPIC_ID + "}")
-        private String topic = TEST_TOPIC_ID;
+        private final String topic;
 
 //        @Value("${kafka.address:localhost:9092}")
         private String brokerAddress = "192.168.99.100:9092";
@@ -45,13 +60,8 @@ public class Application {
 //        @Value("${zookeeper.address:localhost:2181}")
         private String zookeeperAddress = "192.168.99.100:2181";
 
-        KafkaConfig() {
-        }
-
-        public KafkaConfig(String t, String b, String zk) {
-            this.topic = t;
-            this.brokerAddress = b;
-            this.zookeeperAddress = zk;
+        protected KafkaConfig(String topic) {
+            this.topic = topic;
         }
 
         public String getTopic() {
@@ -71,28 +81,54 @@ public class Application {
     public static class ProducerConfiguration {
 
         @Autowired
-        private KafkaConfig kafkaConfig;
+        private NetflixKafkaConfig netflixKafkaConfig;
+        @Autowired
+        private TestKafkaConfig testKafkaConfig;
+        @Autowired
+        private NetflixDataReader netflixDataReader;
 
         private static final String OUTBOUND_ID = "outbound";
+        private static final String OUTBOUND_NETFLIX = "outboundNetflix";
 
         private Log log = LogFactory.getLog(getClass());
 
+//        @Bean
+//        @DependsOn(OUTBOUND_ID)
+//        CommandLineRunner kickOff(
+//                @Qualifier(OUTBOUND_ID + ".input") MessageChannel in) {
+//            return args -> {
+//                for (int i = 0; i < 1000; i++) {
+//                    in.send(new GenericMessage<>("#" + i));
+//                    log.info("sending message #" + i);
+//                }
+//            };
+//        }
+
         @Bean
-        @DependsOn(OUTBOUND_ID)
-        CommandLineRunner kickOff(
-                @Qualifier(OUTBOUND_ID + ".input") MessageChannel in) {
+        @DependsOn(OUTBOUND_NETFLIX)
+        CommandLineRunner netflixData(
+                @Qualifier(OUTBOUND_NETFLIX + ".input") MessageChannel in) {
             return args -> {
-                for (int i = 0; i < 1000; i++) {
-                    in.send(new GenericMessage<>("#" + i));
-                    log.info("sending message #" + i);
-                }
+                netflixDataReader.streamMovieRatings()
+                        .forEach(movieRating -> {
+                            in.send(new GenericMessage<>(movieRating.toString()));
+                        });
             };
         }
 
-        @Bean(name = OUTBOUND_ID)
-        IntegrationFlow producer() {
+//        @Bean(name = OUTBOUND_ID)
+//        IntegrationFlow testProducer() {
+//            log.info("starting producer flow..");
+//            return kafkaProducer(this.testKafkaConfig);
+//        }
 
+        @Bean(name = OUTBOUND_NETFLIX)
+        IntegrationFlow netflixProducer() {
             log.info("starting producer flow..");
+            return kafkaProducer(this.netflixKafkaConfig);
+        }
+
+        private IntegrationFlow kafkaProducer(KafkaConfig kafkaConfig) {
             return flowDefinition -> {
 
                 Consumer<KafkaProducerMessageHandlerSpec.ProducerMetadataSpec> spec =
@@ -106,8 +142,8 @@ public class Application {
                         Kafka.outboundChannelAdapter(
                                 props -> props.put("queue.buffering.max.ms", "15000"))
                                 .messageKey(m -> m.getHeaders().get(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER))
-                                .addProducer(this.kafkaConfig.getTopic(),
-                                        this.kafkaConfig.getBrokerAddress(), spec);
+                                .addProducer(kafkaConfig.getTopic(),
+                                        kafkaConfig.getBrokerAddress(), spec);
                 flowDefinition
                         .handle(messageHandlerSpec);
             };
@@ -118,22 +154,33 @@ public class Application {
     public static class ConsumerConfiguration {
 
         @Autowired
-        private KafkaConfig kafkaConfig;
+        private TestKafkaConfig testKafkaConfig;
+
+        @Autowired
+        private NetflixKafkaConfig netflixKafkaConfig;
 
         private Log log = LogFactory.getLog(getClass());
 
+//        @Bean
+//        IntegrationFlow testConsumer() {
+//            log.info("starting test consumer..");
+//            return kafkaConsumer(testKafkaConfig, e -> log.info(e.getKey() + '=' + e.getValue()));
+//        }
+
         @Bean
-        IntegrationFlow consumer() {
+        IntegrationFlow netflixConsumer() {
+            log.info("starting netflix consumer..");
+            return kafkaConsumer(netflixKafkaConfig, e -> log.info(e.getKey() + '=' + e.getValue()));
+        }
 
-            log.info("starting consumer..");
-
+        private IntegrationFlow kafkaConsumer(KafkaConfig kafkaConfig, java.util.function.Consumer<Map.Entry<String, List<String>>> entryConsumer) {
             KafkaHighLevelConsumerMessageSourceSpec messageSourceSpec = Kafka.inboundChannelAdapter(
-                    new ZookeeperConnect(this.kafkaConfig.getZookeeperAddress()))
+                    new ZookeeperConnect(kafkaConfig.getZookeeperAddress()))
                     .consumerProperties(props ->
                             props.put("auto.offset.reset", "smallest")
                                     .put("auto.commit.interval.ms", "100"))
                     .addConsumer("myGroup", metadata -> metadata.consumerTimeout(100)
-                            .topicStreamMap(m -> m.put(this.kafkaConfig.getTopic(), 1))
+                            .topicStreamMap(m -> m.put(kafkaConfig.getTopic(), 1))
                             .maxMessages(10)
                             .valueDecoder(String::new));
 
@@ -142,7 +189,7 @@ public class Application {
             return IntegrationFlows
                     .from(messageSourceSpec, endpointConfigurer)
                     .<Map<String, List<String>>>handle((payload, headers) -> {
-                        payload.entrySet().forEach(e -> log.info(e.getKey() + '=' + e.getValue()));
+                        payload.entrySet().forEach(entryConsumer);
                         return null;
                     })
                     .get();
