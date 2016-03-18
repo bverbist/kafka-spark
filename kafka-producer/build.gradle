@@ -2,4 +2,6 @@ group = 'be.cegeka.kafka.producer'
 
 dependencies {
     compile "org.apache.kafka:kafka-clients"
+    compile "org.slf4j:slf4j-api"
+    compile "ch.qos.logback:logback-classic"
 }
