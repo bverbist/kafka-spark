@@ -7,31 +7,31 @@ zookeeper:
    - "5000:5000"
 
 kafka-0:
-  image: dockerkafka/kafka
+  image: cegeka/kafka
   ports:
     - "9090:9092"
   links:
     - zookeeper:zookeeper
   volumes:
-      - ./config0:/opt/kafka_2.10-0.8.2.1/config
+      - ./config0:/opt/kafka_2.10-0.9.0.1/config
 
 kafka-1:
-  image: dockerkafka/kafka
+  image: cegeka/kafka
   ports:
     - "9091:9092"
   links:
     - zookeeper:zookeeper
   volumes:
-    - ./config1:/opt/kafka_2.10-0.8.2.1/config
+    - ./config1:/opt/kafka_2.10-0.9.0.1/config
 
 kafka-2:
-  image: dockerkafka/kafka
+  image: cegeka/kafka
   ports:
     - "9092:9092"
   links:
     - zookeeper:zookeeper
   volumes:
-    - ./config2:/opt/kafka_2.10-0.8.2.1/config
+    - ./config2:/opt/kafka_2.10-0.9.0.1/config
 
 kafka-manager:
   image: dockerkafka/kafka-manager
