@@ -1,6 +1,8 @@
 # kafka-spark
 explore apache kafka and spark streaming
 
+Code was just used during a hackathon, so do not expect to find a working setup here!
+
 ## To set up a Kafka cluster:
 cd ops
 docker-compose up -d
